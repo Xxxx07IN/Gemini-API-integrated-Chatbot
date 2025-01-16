@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #5fe4ff, #feb47b);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        #chat {
+            background: rgba(178, 184, 11, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            width: 500px; /* Increased width */
+            max-width: 100%;
+            padding: 30px; /* Increased padding */
+            backdrop-filter: blur(10px); /* Blurred background */
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        #messages {
+            border: 1px solid #ccc;
+            padding: 15px; /* Increased padding */
+            height: 400px; /* Increased height */
+            overflow-y: scroll;
+            border-radius: 8px;
+            margin-bottom: 15px; /* Increased margin */
+            background: rgba(240, 240, 240, 0.9); /* Slightly transparent */
+        }
+        .message {
+            margin: 8px 0; /* Increased margin */
+            padding: 10px; /* Increased padding */
+            border-radius: 8px;
+        }
+        .user {
+            background: #d1e7dd;
+            text-align: right;
+        }
+        .bot {
+            background: #cfe2ff;
+        }
+        input[type="text"] {
+            width: calc(100% - 90px); /* Adjusted for new button size */
+            padding: 12px; /* Increased padding */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            transition: border 0.3s;
+        }
+        input[type="text"]:focus {
+            border-color: #007bff; /* Highlight border on focus */
+        }
+        button {
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #0056b3; /* Darker on hover */
+        }
+        h1 {
+            text-align: center;
+            color: #fff; /* White text for better contrast */
+            margin-bottom: 20px; /* Spacing below title */
+        }
+        
+    </style>
+</head>
+<body>
+    <div id="chat">
+        <h1>Chatbot</h1>
+        <div id="messages"></div>
+        <div style="display: flex;">
+            <input type="text" id="user-input" placeholder="Type a message..." />
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const sendButton = document.getElementById('send-button');
+        const userInput = document.getElementById('user-input');
+        const messagesDiv = document.getElementById('messages');
+
+        const addMessage = (text, className) => {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${className}`;
+            messageDiv.innerText = text;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // Scroll to the bottom
+        };
+
+        sendButton.onclick = async () => {
+            const userMessage = userInput.value.trim();
+            if (userMessage === "") return; // Prevent sending empty messages
+
+            addMessage(`User: ${userMessage}`, 'user');
+            userInput.value = '';
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: userMessage })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                addMessage(`Bot_47: ${data.response}`, 'bot');
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('Bot: Sorry, something went wrong.', 'bot');
+            }
+        };
+
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendButton.click(); // Trigger button click on Enter key
+            }
+        });
+    </script>
+</body>
+</html>
